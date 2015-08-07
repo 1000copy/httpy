@@ -4,7 +4,7 @@ var EventEmitter = require('events').EventEmitter;
 var HTTPParser = process.binding('http_parser').HTTPParser;
 var assert = require('assert').ok;
 
-var common = require('_http_common');
+var common = require('./_http_common');
 var parsers = common.parsers;
 var freeParser = common.freeParser;
 var debug = common.debug;
@@ -150,6 +150,7 @@ ServerResponse.prototype._implicitHeader = function() {
 };
 
 ServerResponse.prototype.writeHead = function(statusCode) {
+  debug("writeHead:",statusCode)
   var headers, headerIndex;
 
   if (util.isString(arguments[1])) {
@@ -163,11 +164,10 @@ ServerResponse.prototype.writeHead = function(statusCode) {
   this.statusCode = statusCode;
 
   var obj = arguments[headerIndex];
-
+  debug("writeHead",obj)
   if (obj && this._headers) {
     // Slow-case: when progressive API and header fields are passed.
     headers = this._renderHeaders();
-
     if (util.isArray(obj)) {
       // handle array case
       // TODO: remove when array is no longer accepted
@@ -187,6 +187,8 @@ ServerResponse.prototype.writeHead = function(statusCode) {
         var k = keys[i];
         if (k) headers[k] = obj[k];
       }
+
+
     }
   } else if (this._headers) {
     // only progressive api is used
@@ -194,6 +196,7 @@ ServerResponse.prototype.writeHead = function(statusCode) {
   } else {
     // only writeHead() called
     headers = obj;
+    debug("writeHead",headers)
   }
 
   var statusLine = 'HTTP/1.1 ' + statusCode.toString() + ' ' +
@@ -219,7 +222,7 @@ ServerResponse.prototype.writeHead = function(statusCode) {
   if (this._expect_continue && !this._sent100) {
     this.shouldKeepAlive = false;
   }
-
+  debug("statusLine",statusLine,headers)
   this._storeHeader(statusLine, headers);
 };
 
@@ -458,6 +461,12 @@ function connectionListener(socket) {
       res.detachSocket(socket);
 
       if (res._last) {
+//         There is no difference.
+
+// From fs.js in the node source:
+
+// // There is no shutdown() for files.
+// WriteStream.prototype.destroySoon = WriteStream.prototype.end;
         socket.destroySoon();
       } else {
         // start sending the next message

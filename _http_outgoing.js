@@ -5,7 +5,7 @@ var Stream = require('stream');
 var timers = require('timers');
 var util = require('util');
 
-var common = require('_http_common');
+var common = require('./_http_common');
 
 var CRLF = common.CRLF;
 var chunkExpression = common.chunkExpression;
@@ -172,6 +172,7 @@ OutgoingMessage.prototype._buffer = function(data, encoding, callback) {
 OutgoingMessage.prototype._storeHeader = function(firstLine, headers) {
   // firstLine in the case of request is: 'GET /index.html HTTP/1.1\r\n'
   // in the case of response it is: 'HTTP/1.1 200 OK\r\n'
+  debug("_storeHeader",firstLine,headers)
   var state = {
     sentConnectionHeader: false,
     sentContentLengthHeader: false,

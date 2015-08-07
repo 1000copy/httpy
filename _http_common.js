@@ -3,7 +3,7 @@
 var FreeList = require('freelist').FreeList;
 var HTTPParser = process.binding('http_parser').HTTPParser;
 
-var incoming = require('_http_incoming');
+var incoming = require('./_http_incoming');
 var IncomingMessage = incoming.IncomingMessage;
 var readStart = incoming.readStart;
 var readStop = incoming.readStop;
