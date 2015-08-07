@@ -13,7 +13,7 @@ var continueExpression = common.continueExpression;
 var chunkExpression = common.chunkExpression;
 var httpSocketSetup = common.httpSocketSetup;
 
-var OutgoingMessage = require('_http_outgoing').OutgoingMessage;
+var OutgoingMessage = require('./_http_outgoing2').OutgoingMessage;
 
 
 var STATUS_CODES = exports.STATUS_CODES = {
@@ -222,7 +222,6 @@ ServerResponse.prototype.writeHead = function(statusCode) {
   if (this._expect_continue && !this._sent100) {
     this.shouldKeepAlive = false;
   }
-  debug("statusLine",statusLine,headers)
   this._storeHeader(statusLine, headers);
 };
 
@@ -461,10 +460,8 @@ function connectionListener(socket) {
       res.detachSocket(socket);
 
       if (res._last) {
-//         There is no difference.
-
+// There is no difference.
 // From fs.js in the node source:
-
 // // There is no shutdown() for files.
 // WriteStream.prototype.destroySoon = WriteStream.prototype.end;
         socket.destroySoon();

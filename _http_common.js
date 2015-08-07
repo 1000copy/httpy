@@ -42,7 +42,7 @@ function parserOnHeaders(headers, url) {
 // info.url is not set for response parsers but that's not
 // applicable here since all our parsers are request parsers.
 function parserOnHeadersComplete(info) {
-  debug('parserOnHeadersComplete', info);
+  // debug('parserOnHeadersComplete', info);
   var parser = this;
   var headers = info.headers;
   var url = info.url;

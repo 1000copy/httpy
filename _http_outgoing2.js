@@ -250,7 +250,7 @@ OutgoingMessage.prototype._storeHeader = function(firstLine, headers) {
       state.messageHeader += 'Connection: close\r\n';
     }
   }
-
+  //  if content length is not setted,then transfer-encoding is chunked 
   if (state.sentContentLengthHeader == false &&
       state.sentTransferEncodingHeader == false) {
     if (this._hasBody && !this._removedHeader['transfer-encoding']) {
@@ -272,6 +272,7 @@ OutgoingMessage.prototype._storeHeader = function(firstLine, headers) {
   // wait until the first body chunk, or close(), is sent to flush,
   // UNLESS we're sending Expect: 100-continue.
   if (state.sentExpect) this._send('');
+  debug("messageHeader",state.messageHeader)
 };
 
 function storeHeader(self, state, field, value) {
@@ -466,6 +467,7 @@ var crlf_buf = new Buffer('\r\n');
 
 
 OutgoingMessage.prototype.end = function(data, encoding, callback) {
+  debug("end:headers:",this._header)
   if (util.isFunction(data)) {
     callback = data;
     data = null;

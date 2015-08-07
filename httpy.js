@@ -11,7 +11,7 @@ exports.METHODS = util._extend([], common.methods).sort();
 exports.parsers = common.parsers;
 
 
-var outgoing = require('./_http_outgoing');
+var outgoing = require('./_http_outgoing2');
 var OutgoingMessage = exports.OutgoingMessage = outgoing.OutgoingMessage;
 
 
