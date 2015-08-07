@@ -476,7 +476,7 @@ function connectionListener(socket) {
         }
       }
     }
-
+    // expect 100-continue handler 
     if (!util.isUndefined(req.headers.expect) &&
         (req.httpVersionMajor == 1 && req.httpVersionMinor == 1) &&
         continueExpression.test(req.headers['expect'])) {
