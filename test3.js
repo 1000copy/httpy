@@ -73,4 +73,15 @@
 // function a() { obj.removeListener('event', b) ;console.log("aaaa\n")}
 // function b() { throw "BAM!" }
 // obj.emit('event');  // throws
+// function Foo(){
 
+// }
+// var FreeList = require("./_http_common2").FreeList
+// var foo = new FreeList('foo', 1000, function() {
+//   return Foo()
+// }
+
+
+
+
+  

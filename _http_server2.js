@@ -416,6 +416,7 @@ function connectionListener(socket) {
   socket.on('drain', socketOnDrain);
 
   function parserOnIncoming(req, shouldKeepAlive) {
+    // debugparser("req",req)
     incoming.push(req);
 
     // If the writable end isn't consuming, then stop reading

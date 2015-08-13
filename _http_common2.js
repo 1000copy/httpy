@@ -1,6 +1,26 @@
+// This is a free list to avoid creating so many of the same object.
+FreeList = function(name, max, constructor) {
+  this.name = name;
+  this.constructor = constructor;
+  this.max = max;
+  this.list = [];
+};
 
 
-var FreeList = require('freelist').FreeList;
+FreeList.prototype.alloc = function() {
+  // debugparser("alloc " + this.name + " " + this.list.length);
+  return this.list.length ? this.list.shift() :
+                            this.constructor.apply(this, arguments);
+};
+
+FreeList.prototype.free = function(obj) {
+  // debugparser("free " + this.name + " " + this.list.length);
+  if (this.list.length < this.max) {
+    this.list.push(obj);
+  }
+};
+
+// var FreeList = require('freelist').FreeList;
 // var HTTPParser = process.binding('http_parser').HTTPParser;
 var HTTPParser = require('./http_parser').HTTPParser;
 var incoming = require('./_http_incoming2');
@@ -116,7 +136,7 @@ function parserOnBody(b, start, len) {
 
   // pretend this was the result of a stream._read call.
   if (len > 0 && !stream._dumped) {
-    debugparser("dumped",b,start,len)
+    // debugparser("dumped",b,start,len)
     var slice = b.slice(start, start + len);
     // debugparser("slice",slice)
     var ret = stream.push(slice);
