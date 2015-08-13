@@ -22,6 +22,9 @@ var kOnHeaders = HTTPParser.kOnHeaders | 0;
 var kOnHeadersComplete = HTTPParser.kOnHeadersComplete | 0;
 var kOnBody = HTTPParser.kOnBody | 0;
 var kOnMessageComplete = HTTPParser.kOnMessageComplete | 0;
+//  kOnHeadersComplete vs. kOnHeaders
+//  后面的仅仅用于trailers !至少在http-parser的javascript版本
+// 
 // 1. not tested: 在http_parser.js 内并无slowcase；
 // 估计在http_parser.c 内有考虑吧。长长的出了一口气，至少在js版本可以不考虑这样的问题。
 // how to make a slow case or too large ?
@@ -117,6 +120,7 @@ function parserOnBody(b, start, len) {
     var slice = b.slice(start, start + len);
     // debugparser("slice",slice)
     var ret = stream.push(slice);
+    // ret指明stream是否可以继续push。如果不能，那么就把socket stream做一个暂停。
     // debugparser("ret",ret)
     if (!ret)
       readStop(socket);
