@@ -5,8 +5,8 @@
 
 var common = require('../common');
 var assert = require('assert');
-var HTTPParser = process.binding('http_parser').HTTPParser;
-
+// var HTTPParser = process.binding('http_parser').HTTPParser;
+var HTTPParser = require('./http_parser').HTTPParser;
 var kOnHeaders = HTTPParser.kOnHeaders | 0;
 var kOnHeadersComplete = HTTPParser.kOnHeadersComplete | 0;
 var kOnBody = HTTPParser.kOnBody | 0;

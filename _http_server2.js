@@ -1,13 +1,15 @@
 var util = require('util');
 var net = require('net');
 var EventEmitter = require('events').EventEmitter;
-var HTTPParser = process.binding('http_parser').HTTPParser;
+// var HTTPParser = process.binding('http_parser').HTTPParser;
+var HTTPParser = require('./http_parser').HTTPParser;
 var assert = require('assert').ok;
 
-var common = require('./_http_common');
+var common = require('./_http_common2');
 var parsers = common.parsers;
 var freeParser = common.freeParser;
 var debug = common.debug;
+var debugparser = common.debugparser
 var CRLF = common.CRLF;
 var continueExpression = common.continueExpression;
 var chunkExpression = common.chunkExpression;
@@ -333,8 +335,10 @@ function connectionListener(socket) {
   }
 
   function socketOnData(d) {
+    debug('SERVER socketOnData', d);
     assert(!socket._paused);
-    debug('SERVER socketOnData %d', d.length);
+    // debug('SERVER socketOnData %d', d.length);
+    debug('SERVER socketOnData', d);
     var ret = parser.execute(d);
     if (ret instanceof Error) {
       debug('parse error');
@@ -343,7 +347,7 @@ function connectionListener(socket) {
       // Upgrade or CONNECT
       var bytesParsed = ret;
       var req = parser.incoming;
-      debug('SERVER upgrade or connect', req.method);
+      debug('SERVER upgrade or conanect', req.method);
 
       socket.removeListener('data', socketOnData);
       socket.removeListener('end', socketOnEnd);
@@ -454,8 +458,10 @@ function connectionListener(socket) {
       // if the user never called req.read(), and didn't pipe() or
       // .resume() or .on('data'), then we call req._dump() so that the
       // bytes will be pulled off the wire.
-      if (!req._consuming)
+      if (!req._consuming){
+        debugparser("HACK:DUMP")
         req._dump();
+      }
 
       res.detachSocket(socket);
 

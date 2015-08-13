@@ -1,25 +1,5 @@
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-var common = require('../common');
+// var common = require('../common');
 var assert = require('assert');
 
 // var HTTPParser = process.binding('http_parser').HTTPParser;
@@ -65,7 +45,8 @@ function newParser(type) {
 
   return parser;
 }
-
+// info.headers and info.url are set only if .onHeaders()
+// has not been called for this request.
 
 function mustCall(f, times) {
   var actual = 0;
@@ -88,6 +69,31 @@ function expectBody(expected) {
     assert.equal(body, expected);
   });
 }
+// test onHeaders vs. onHeadersCompleted
+
+(function() {
+  var request = Buffer(
+      'HTTP/1.1 200 OK' + CRLF +
+      'Content-Type: text/plain' + CRLF +
+      'Content-Length: 4' + CRLF );
+
+  var parser = newParser(RESPONSE);
+
+  parser[kOnHeadersComplete] = mustCall(function(info) {
+    assert.equal(info.method, undefined);
+    assert.equal(info.versionMajor, 1);
+    assert.equal(info.versionMinor, 1);
+    assert.equal(info.statusCode, 200);
+    assert.equal(info.statusMessage, "OK");
+  });
+
+  parser[kOnHeaders] = function(headers, url) {
+    parser.headers = parser.headers.concat(headers);
+    parser.url += url;
+  };
+
+  parser.execute(request, 0, request.length);
+})();
 
 
 //
@@ -105,7 +111,7 @@ function expectBody(expected) {
     assert.equal(info.url || parser.url, '/hello');
     assert.equal(info.versionMajor, 1);
     assert.equal(info.versionMinor, 1);
-  });
+  },1);
 
   parser.execute(request, 0, request.length);
 
@@ -189,6 +195,8 @@ function expectBody(expected) {
       CRLF +
       '4' + CRLF +
       'ping' + CRLF +
+      '3' + CRLF +
+      'pon' + CRLF +
       '0' + CRLF +
       'Vary: *' + CRLF +
       'Content-Type: text/plain' + CRLF +
@@ -215,9 +223,12 @@ function expectBody(expected) {
 
   parser[kOnBody] = mustCall(function(buf, start, len) {
     var body = '' + buf.slice(start, start + len);
-    assert.equal(body, 'ping');
+    if (len==4)
+      assert.equal(body, 'ping');
+    else
+      assert.equal(body, 'pon');
     seen_body = true;
-  });
+  },2);
 
   parser.execute(request, 0, request.length);
 })();

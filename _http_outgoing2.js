@@ -5,12 +5,12 @@ var Stream = require('stream');
 var timers = require('timers');
 var util = require('util');
 
-var common = require('./_http_common');
+var common = require('./_http_common2');
 
 var CRLF = common.CRLF;
 var chunkExpression = common.chunkExpression;
 var debug = common.debug;
-
+var debugparser= common.debugparser
 
 var connectionExpression = /Connection/i;
 var transferEncodingExpression = /Transfer-Encoding/i;
@@ -103,12 +103,16 @@ OutgoingMessage.prototype._send = function(data, encoding, callback) {
   // This is a shameful hack to get the headers and first body chunk onto
   // the same packet. Future versions of Node are going to take care of
   // this at a lower level and in a more general way.
+  // debugparser("HACK3:",data,data.length,this._headerSent)
   if (!this._headerSent) {
     if (util.isString(data) &&
         encoding !== 'hex' &&
         encoding !== 'base64') {
+      // debugparser("HACK1:",data,data.length)
       data = this._header + data;
+      
     } else {
+      // debugparser("HACK2:",data,data.length)
       this.output.unshift(this._header);
       this.outputEncodings.unshift('binary');
       this.outputCallbacks.unshift(null);
@@ -137,6 +141,7 @@ OutgoingMessage.prototype._writeRaw = function(data, encoding, callback) {
       !this.connection.destroyed) {
     // There might be pending data in the this.output buffer.
     while (this.output.length) {
+      // debugparser(this.output.length)
       if (!this.connection.writable) {
         this._buffer(data, encoding, callback);
         return false;
