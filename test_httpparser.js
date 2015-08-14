@@ -73,9 +73,17 @@ function expectBody(expected) {
 
 (function() {
   var request = Buffer(
-      'HTTP/1.1 200 OK' + CRLF +
+      'POST /it HTTP/1.1' + CRLF +
+      'Transfer-Encoding: chunked' + CRLF +
+      CRLF +
+      '4' + CRLF +
+      'ping' + CRLF +
+      '3' + CRLF +
+      'pon' + CRLF +
+      '0' + CRLF +
+      'Vary: *' + CRLF +
       'Content-Type: text/plain' + CRLF +
-      'Content-Length: 4' + CRLF );
+      CRLF);
 
   var parser = newParser(RESPONSE);
 
