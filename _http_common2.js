@@ -44,14 +44,6 @@ var kOnBody = HTTPParser.kOnBody | 0;
 var kOnMessageComplete = HTTPParser.kOnMessageComplete | 0;
 //  kOnHeadersComplete vs. kOnHeaders
 //  后面的仅仅用于trailers !至少在http-parser的javascript版本
-// 
-// 1. not tested: 在http_parser.js 内并无slowcase；
-// 估计在http_parser.c 内有考虑吧。长长的出了一口气，至少在js版本可以不考虑这样的问题。
-// how to make a slow case or too large ?
-// Only called in the slow case where slow means
-// that the request headers were either fragmented
-// across multiple TCP packets or too large to be
-// processed in a single run. 
 // 2. tested oK:This method is also called to process trailing HTTP headers.
 function parserOnHeaders(headers, url) {
   // Once we exceeded headers limit - stop collecting them

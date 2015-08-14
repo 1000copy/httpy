@@ -437,7 +437,7 @@ function connectionListener(socket) {
 
     res.shouldKeepAlive = shouldKeepAlive;
     DTRACE_HTTP_SERVER_REQUEST(req, socket);
-
+    // 想要验证此分支。一个socket，多个response排队打堆堆
     if (socket._httpMessage) {
       // There are already pending outgoing res, append.
       outgoing.push(res);
@@ -453,7 +453,6 @@ function connectionListener(socket) {
       // be that in the case abortIncoming() was called that the incoming
       // array will be empty.
       assert(incoming.length == 0 || incoming[0] === req);
-
       incoming.shift();
 
       // if the user never called req.read(), and didn't pipe() or
@@ -465,15 +464,14 @@ function connectionListener(socket) {
       }
 
       res.detachSocket(socket);
-
-      if (res._last) {
-// There is no difference.
-// From fs.js in the node source:
-// // There is no shutdown() for files.
-// WriteStream.prototype.destroySoon = WriteStream.prototype.end;
+      // 如何覆盖两个这两个分支？
+      // res._last 是connection:keep-alive,close 有关。
+      if (res._last) { 
+       // WriteStream.prototype.destroySoon = WriteStream.prototype.end;
         socket.destroySoon();
       } else {
         // start sending the next message
+        console.log("debug()")
         var m = outgoing.shift();
         if (m) {
           m.assignSocket(socket);
