@@ -3,16 +3,17 @@ var util = require('util');
 
 var HTTPParser = require('./http_parser').HTTPParser
 
-
-
 function IncomingMessage() {
+  this.buffers= []
   Readable.call(this);
   this.parser = new HTTPParser(HTTPParser.REQUEST); 
   var parser = this.parser 
-  parser[HTTPParser.kOnHeaders] = this.onHeaders
-  parser[HTTPParser.kOnHeadersComplete] = this.onheadercomplete
-  parser[HTTPParser.kOnBody] = this.onbody 
-  parser[HTTPParser.kOnMessageComplete] = this.oncompleted   
+  parser[HTTPParser.kOnHeaders] = this.onHeaders.bind(this)
+  parser[HTTPParser.kOnHeadersComplete] = this.onheadercomplete.bind(this)
+  // 这个地方太关键了.只有这样，this指向才是IncomingMessage,而不是onbody本身
+  //  this.onbody.bind(this) vs. onbody
+  parser[HTTPParser.kOnBody] = this.onbody.bind(this) 
+  parser[HTTPParser.kOnMessageComplete] = this.oncompleted.bind(this)
   // property
   this.headers = [];//: [ 'k1', 'v1' ],
   this.upgrade = false//: false,
@@ -22,6 +23,7 @@ function IncomingMessage() {
   this.versionMinor=1 //: 1,
   this.shouldKeepAlive = false//: true 
   var self = this 
+  
 }
 
 util.inherits(IncomingMessage, Readable);
@@ -29,7 +31,8 @@ util.inherits(IncomingMessage, Readable);
 IncomingMessage.prototype.onHeaders =  function(headers, url) {
     // parser.headers = parser.headers.concat(headers);
     // parser.url += url;
-    console.log("onHeaders",headers)
+    // console.log("onHeaders",headers)
+
 };
 
 IncomingMessage.prototype.onheadercomplete = function(info) {
@@ -44,37 +47,21 @@ IncomingMessage.prototype.onheadercomplete = function(info) {
 };
 
 IncomingMessage.prototype.onbody = function(b, start, len) {
-  // this.emit("chunk",b.slice(start,len))
-  // console.log("BODY:")
   var s = b.slice(start,start+len)
-  // 在何处push？1
-  if (!this.buffer)
-    {this.buffer = []}
-  this.buffer.push(s)
-  // console.log(this.buffer.length,this.buffer)
-  // this.push(s)
-  // console.log(b.toString())
-  // console.log(s.toString())
-
-  // console.log(start,len)
-
+  this.buffers.push(s)
 };
 IncomingMessage.prototype._read = function(){
-  // this.
-  // 在何处push？2
-  console.log("read___",this.buffer)
-  while(this.buffer && (this.buffer.length >0))
-    if (this.push(this.buffer.shift())==false)
+  while(this.buffers && (this.buffers.length >0))
+    if (this.push(this.buffers.shift())==false)
       break;
-  // if (this.buffer && this.buffer.length==0)
-  //   this.push(null)
 }
 IncomingMessage.prototype.oncompleted = function() {
-    console.log("oncompleted")
+    // console.log("oncompleted")
     // this.push(null)
     // this.push(null)
 };
 IncomingMessage.prototype.execute = function(buffer) {
+  console.log("BODY:",this.buffers)
   this.parser.execute(buffer,0,buffer.length)
 };
 
@@ -97,15 +84,11 @@ var assert = require('assert');
       'Content-Type: text/plain' + CRLF +
       CRLF);
   var msg = new IncomingMessage()
-  // msg.on("Readable",function(data){
-  //   console.log(data)
-  // })
+  msg.on("data",function(data){
+    console.log(data.toString("utf-8"))
+  })
   
   msg.execute(request)
-  // console.log("---------",msg.buffer)
-  // console.log("---------")
-  // msg.pipe(process.stdout)
-  // console.log(msg.read())
 })();
 
 
