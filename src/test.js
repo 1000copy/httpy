@@ -12,9 +12,9 @@
   console.log('Server started 8011' );
   function doRequestTimes(){
     for(var i= 0;i<3;i++)
-      doRequest()
+      doRequest(i)
   } 
-  function doRequest(){
+  function doRequest(path){
     // console.log('listened' );  
     // var debug = require("./_http_common.js").debug
     // debug("listened")
@@ -35,11 +35,13 @@
         console.log( body.slice(3).toString());
       })
   }).on('error', function(e) {
-      console.log(e.message);
+      console.log("e.message");
     })
-    req.write("abc")
-    req.write("2")
-    req.write("333")
+    // req.write("abc")
+    // req.write("2")
+    // req.write("333")
     req.end();
-
   }
+// console.log("a")
+// console.log("b\n")
+// console.log("c")
