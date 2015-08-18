@@ -86,6 +86,7 @@ function ServerResponse(req) {
   this.sendDate = true;
 
   if (req.httpVersionMajor < 1 || req.httpVersionMinor < 1) {
+    // te = Transfer-Encode ?
     this.useChunkedEncodingByDefault = chunkExpression.test(req.headers.te);
     this.shouldKeepAlive = false;
   }
@@ -95,7 +96,7 @@ util.inherits(ServerResponse, OutgoingMessage);
 ServerResponse.prototype._finish = function() {
   DTRACE_HTTP_SERVER_RESPONSE(this.connection);
   OutgoingMessage.prototype._finish.call(this);
-};
+}; 
 
 
 
@@ -265,7 +266,7 @@ Server.prototype.setTimeout = function(msecs, callback) {
 
 exports.Server = Server;
 
-
+var gincomings = []
 function connectionListener(socket) {
   var self = this;
   var outgoing = [];
@@ -335,10 +336,10 @@ function connectionListener(socket) {
   }
 
   function socketOnData(d) {
-    debug('SERVER socketOnData', d);
+    // debug('SERVER socketOnData', d);
     assert(!socket._paused);
     // debug('SERVER socketOnData %d', d.length);
-    debug('SERVER socketOnData', d);
+    // debug('SERVER socketOnData', d);
     var ret = parser.execute(d);
     if (ret instanceof Error) {
       debug('parse error');
@@ -416,9 +417,12 @@ function connectionListener(socket) {
   socket.on('drain', socketOnDrain);
 
   function parserOnIncoming(req, shouldKeepAlive) {
-    // debugparser("req",req)
+    // gincomings.push(req)
     incoming.push(req);
-
+    // debug section:
+      // debugparser("incoming",req.url)
+      // for(var kincoming=0;kincoming<gincomings.length;kincoming++)
+      //   debugparser(gincomings[kincoming].url)
     // If the writable end isn't consuming, then stop reading
     // so that we don't become overwhelmed by a flood of
     // pipelined requests that may never be resolved.
@@ -437,7 +441,7 @@ function connectionListener(socket) {
 
     res.shouldKeepAlive = shouldKeepAlive;
     DTRACE_HTTP_SERVER_REQUEST(req, socket);
-    // 想要验证此分支。一个socket，多个response排队打堆堆
+
     if (socket._httpMessage) {
       // There are already pending outgoing res, append.
       outgoing.push(res);
@@ -453,25 +457,27 @@ function connectionListener(socket) {
       // be that in the case abortIncoming() was called that the incoming
       // array will be empty.
       assert(incoming.length == 0 || incoming[0] === req);
+
       incoming.shift();
 
       // if the user never called req.read(), and didn't pipe() or
       // .resume() or .on('data'), then we call req._dump() so that the
       // bytes will be pulled off the wire.
       if (!req._consuming){
-        debugparser("HACK:DUMP")
+        // debugparser("HACK:DUMP")
         req._dump();
       }
 
       res.detachSocket(socket);
-      // 如何覆盖两个这两个分支？
-      // res._last 是connection:keep-alive,close 有关。
-      if (res._last) { 
-       // WriteStream.prototype.destroySoon = WriteStream.prototype.end;
+
+      if (res._last) {
+// There is no difference.
+// From fs.js in the node source:
+// // There is no shutdown() for files.
+// WriteStream.prototype.destroySoon = WriteStream.prototype.end;
         socket.destroySoon();
       } else {
         // start sending the next message
-        console.log("debug()")
         var m = outgoing.shift();
         if (m) {
           m.assignSocket(socket);

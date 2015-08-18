@@ -243,7 +243,9 @@ OutgoingMessage.prototype._storeHeader = function(firstLine, headers) {
   if (this._removedHeader.connection) {
     this._last = true;
     this.shouldKeepAlive = false;
+    // console.log("TRACE")
   } else if (state.sentConnectionHeader === false) {
+    // console.log("--",this.shouldKeepAlive)
     var shouldSendKeepAlive = this.shouldKeepAlive &&
         (state.sentContentLengthHeader ||
          this.useChunkedEncodingByDefault ||
@@ -252,6 +254,7 @@ OutgoingMessage.prototype._storeHeader = function(firstLine, headers) {
       state.messageHeader += 'Connection: keep-alive\r\n';
     } else {
       this._last = true;
+      console.log("TRACE")
       state.messageHeader += 'Connection: close\r\n';
     }
   }
