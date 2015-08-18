@@ -428,7 +428,8 @@ OutgoingMessage.prototype.write = function(chunk, encoding, callback) {
         len = Buffer.byteLength(chunk, encoding);
       else
         len = chunk.length;
-
+      // 这一段代码太酷了。先cork，等到这一个线索的代码全部执行后马上uncork。
+      // 一块完整的（而非破碎的）chunk直扑到网络！
       if (this.connection && !this.connection.corked) {
         this.connection.cork();
         var conn = this.connection;

@@ -266,22 +266,26 @@ Server.prototype.setTimeout = function(msecs, callback) {
 
 exports.Server = Server;
 
-var gincomings = []
+
 function connectionListener(socket) {
   var self = this;
   var outgoing = [];
   var incoming = [];
 
   function abortIncoming() {
+
+    // console.log("Abort Entry",incoming.length ,outgoing.length)
     while (incoming.length) {
       var req = incoming.shift();
       req.emit('aborted');
       req.emit('close');
     }
-    // abort socket._httpMessage ?
+    
+    // console.log("Abort Exit",incoming.length ,outgoing.length)
   }
 
   function serverSocketCloseListener() {
+
     debug('server socket close');
     // mark this parser as reusable
     if (this.parser)
@@ -420,7 +424,7 @@ function connectionListener(socket) {
   function parserOnIncoming(req, shouldKeepAlive) {
     // gincomings.push(req)
     incoming.push(req);    
-    // 防御型编程。有人大量写入数据却不消费，导致needDrain（如test/drain.js）.这时候暂停解析新的incoming是好的想法
+    // 防御型编程。在一个请求内POST大量data，却不消费response，导致needDrain（如test/drain.js）.这时候暂停解析新的incoming是好的想法
     if (!socket._paused) {
       var needPause = socket._writableState.needDrain;
       if (needPause) {
@@ -437,6 +441,10 @@ function connectionListener(socket) {
     if (socket._httpMessage) {      
       outgoing.push(res);
       // coverage: pipeline-quenehttpmessage.js 直接用tcp发一堆get过来。这个得防着
+      // 实践上有价值吗？
+      // if (incoming.length ==12)
+      //   for(var i= 0 ;i<incoming.length;i++)
+      //        console.log(incoming[i].url)
     } else {
       res.assignSocket(socket);
     }
@@ -448,6 +456,7 @@ function connectionListener(socket) {
       // Usually the first incoming element should be our request.  it may
       // be that in the case abortIncoming() was called that the incoming
       // array will be empty.
+      // console.log("entry",incoming.length ,outgoing.length,res._last)
       assert(incoming.length == 0 || incoming[0] === req);
 
       incoming.shift();
@@ -467,11 +476,13 @@ function connectionListener(socket) {
         socket.destroySoon();
       } else {
         // start sending the next message
+
         var m = outgoing.shift();
         if (m) {
           m.assignSocket(socket);
         }
       }
+      // console.log("exit",incoming.length ,outgoing.length,res._last)
     }
     // expect 100-continue handler 
     if (!util.isUndefined(req.headers.expect) &&

@@ -1,3 +1,9 @@
+// https://groups.google.com/forum/#!topic/nodejs/7pZFgRaVqZA
+// http.Server supports pipelining, but http.ClientRequest does not.
+// http.Client is a single TCP stream, not a pool of HTTP connections.
+// HTTP does not support concurrent requests, only pipelining - which
+// Node's client avoids because it's not well supported by servers.
+// (Node's HTTP server does support clients who send pipelined requests.)
 var common = {}
 common.PORT = 12346;
 var assert = require('assert');
@@ -35,6 +41,8 @@ var server = httpy.createServer(function(req, res) {
       res.destroy();
       server.emit('requestDone');
   }
+  
+
 });
 
 
@@ -68,4 +76,5 @@ process.on('exit', function(c) {
   if (!c)
     console.log('ok');
 });
+
 

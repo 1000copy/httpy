@@ -78,7 +78,9 @@ HTTPParser.prototype.execute = function (chunk, start, length) {
   var end = this.end = start + length;
   try {
     while (this.offset < end) {
-      if (this[this.state]()) {
+      // console.log(this.state)
+      var ret =  this[this.state]()      
+      if (ret) {
         break;
       }
     }
@@ -169,7 +171,9 @@ HTTPParser.prototype.parseHeader = function (line, headers) {
 
 var requestExp = /^([A-Z-]+) ([^ ]+) HTTP\/(\d)\.(\d)$/;
 HTTPParser.prototype.REQUEST_LINE = function () {
+  // console.log("line")
   var line = this.consumeLine();
+  // console.log(line)
   if (!line) {
     return;
   }
