@@ -48,6 +48,7 @@ function visit(path,then) {
   });
 }
 var server = http.createServer(function (req, res) {
+  // console.log(req.headers)
   res.end('any data');
   // 尽管url不同，但是客户端端口是一样的！这说明connection确实被共享了。
   console.log(

@@ -245,7 +245,11 @@ OutgoingMessage.prototype._storeHeader = function(firstLine, headers) {
     this.shouldKeepAlive = false;
 
   } else if (state.sentConnectionHeader === false) {
-    // console.log("--",this.shouldKeepAlive)
+    console.log(this.shouldKeepAlive ,
+                state.sentContentLengthHeader,
+                this.useChunkedEncodingByDefault ,
+                this.agent)
+    console.trace()
     var shouldSendKeepAlive = this.shouldKeepAlive &&
         (state.sentContentLengthHeader ||
          this.useChunkedEncodingByDefault ||

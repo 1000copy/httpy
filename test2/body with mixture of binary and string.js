@@ -38,12 +38,9 @@
       })
   }).on('error', function(e) {
       console.log("e.message");
+
     })
-    // req.write("abc")
-    // req.write("2")
-    // req.write("333")
-    req.end();
-  }
-// console.log("a")
-// console.log("b\n")
-// console.log("c")
+  })
+  req.end();
+}
+// 验证 connection:keep-alive 头的添加过程。

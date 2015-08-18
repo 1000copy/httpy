@@ -412,6 +412,7 @@ function connectionListener(socket) {
   socket._paused = false;
 
   function socketOnDrain() {
+    console.log("drain")
     // If we previously paused, then start reading again.
     if (socket._paused) {
       socket._paused = false;
@@ -422,6 +423,7 @@ function connectionListener(socket) {
   socket.on('drain', socketOnDrain);
 
   function parserOnIncoming(req, shouldKeepAlive) {
+    // console.log(shouldKeepAlive)
     // gincomings.push(req)
     incoming.push(req);    
     // 防御型编程。在一个请求内POST大量data，却不消费response，导致needDrain（如test/drain.js）.这时候暂停解析新的incoming是好的想法
