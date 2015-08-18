@@ -31,10 +31,11 @@ var server = http.createServer(function (req, res) {
 });
 
 function get(path, callback) {
-  return agent.get({
+  return http.get({
     host: 'localhost',
     port: common.PORT,
-    path: path
+    path: path,
+    agent:agent
   }, callback);
 }
 

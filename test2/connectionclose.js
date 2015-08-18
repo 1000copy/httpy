@@ -1,12 +1,13 @@
 var assert = require('assert');
 var http = require('http');
-var http = require('http');
+var httpy = require('../src/httpy2');
 var EventEmitter = require('events').EventEmitter;
 
 var common = {PORT:8088}
 
 var agent = new http.Agent({
-  keepAlive: true,
+  // keepAlive: true,
+  keepAlive: false,
   keepAliveMsecs: 1000,
   maxSockets: 5,
   maxFreeSockets: 5,
@@ -47,7 +48,7 @@ function visit(path,then) {
     });
   });
 }
-var server = http.createServer(function (req, res) {
+var server = httpy.createServer(function (req, res) {
   res.end('any data');
   // 尽管url不同，但是客户端端口是一样的！这说明connection确实被共享了。
   console.log(

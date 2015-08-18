@@ -406,6 +406,7 @@ function connectionListener(socket) {
   // to the user.
 
   socket._paused = false;
+
   function socketOnDrain() {
     // If we previously paused, then start reading again.
     if (socket._paused) {
@@ -418,22 +419,14 @@ function connectionListener(socket) {
 
   function parserOnIncoming(req, shouldKeepAlive) {
     // gincomings.push(req)
-    incoming.push(req);
-    // debug section:
-      // debugparser("incoming",req.url)
-      // for(var kincoming=0;kincoming<gincomings.length;kincoming++)
-      //   debugparser(gincomings[kincoming].url)
-    // If the writable end isn't consuming, then stop reading
-    // so that we don't become overwhelmed by a flood of
-    // pipelined requests that may never be resolved.
+    incoming.push(req);    
+    // 防御型编程。有人大量写入数据却不消费，导致needDrain（如test/drain.js）.这时候暂停解析新的incoming是好的想法
     if (!socket._paused) {
       var needPause = socket._writableState.needDrain;
       if (needPause) {
-        socket._paused = true;
-        // We also need to pause the parser, but don't do that until after
-        // the call to execute, because we may still be processing the last
-        // chunk.
+        socket._paused = true;        // 疑问： 这个this.paused 在做pause时本来就会在内部设置啊。何必此处再设置？
         socket.pause();
+        console.log("paused",socket._paused)
       }
     }
 
@@ -441,10 +434,9 @@ function connectionListener(socket) {
 
     res.shouldKeepAlive = shouldKeepAlive;
     DTRACE_HTTP_SERVER_REQUEST(req, socket);
-
-    if (socket._httpMessage) {
-      // There are already pending outgoing res, append.
+    if (socket._httpMessage) {      
       outgoing.push(res);
+      // coverage: pipeline-quenehttpmessage.js 直接用tcp发一堆get过来。这个得防着
     } else {
       res.assignSocket(socket);
     }
@@ -471,10 +463,7 @@ function connectionListener(socket) {
       res.detachSocket(socket);
 
       if (res._last) {
-// There is no difference.
-// From fs.js in the node source:
-// // There is no shutdown() for files.
-// WriteStream.prototype.destroySoon = WriteStream.prototype.end;
+        // WriteStream.prototype.destroySoon = WriteStream.prototype.end;
         socket.destroySoon();
       } else {
         // start sending the next message

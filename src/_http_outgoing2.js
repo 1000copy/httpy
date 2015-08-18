@@ -237,13 +237,13 @@ OutgoingMessage.prototype._storeHeader = function(firstLine, headers) {
           ' closing connection.');
     this.chunkedEncoding = false;
     this.shouldKeepAlive = false;
-  }
-
-  // keep-alive logic
+  }  
+  // console.log("TRACE:IsLast")
+  // console.log("TRACE:IsLast",this._removedHeader)  // keep-alive logic
   if (this._removedHeader.connection) {
     this._last = true;
     this.shouldKeepAlive = false;
-    // console.log("TRACE")
+
   } else if (state.sentConnectionHeader === false) {
     // console.log("--",this.shouldKeepAlive)
     var shouldSendKeepAlive = this.shouldKeepAlive &&
@@ -254,7 +254,7 @@ OutgoingMessage.prototype._storeHeader = function(firstLine, headers) {
       state.messageHeader += 'Connection: keep-alive\r\n';
     } else {
       this._last = true;
-      console.log("TRACE")
+      console.log("TRACE1")
       state.messageHeader += 'Connection: close\r\n';
     }
   }
