@@ -26,6 +26,7 @@
       keepAlive:true
     },function(res){
       console.dir(res.req._headers)
+
       // console.dir(res)
         var bodyChunks = [];
       res.on('data', function(chunk) {
