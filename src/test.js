@@ -22,9 +22,11 @@
       host: 'localhost',
       port: "8011",
       method: 'POST',
-      path: '/'
+      path: '/',
+      keepAlive:true
     },function(res){
-      console.dir(res)
+      console.dir(res.req._headers)
+      // console.dir(res)
         var bodyChunks = [];
       res.on('data', function(chunk) {
         bodyChunks.push(chunk);        

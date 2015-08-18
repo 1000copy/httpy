@@ -19,7 +19,9 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-var common = require('../common');
+// var common = require('../common');
+var common ={}
+common.PORT = 8077
 var http = require('http');
 var assert = require('assert');
 

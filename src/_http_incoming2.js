@@ -61,6 +61,7 @@ util.inherits(IncomingMessage, Stream.Readable);
 exports.IncomingMessage = IncomingMessage;
 
 
+
 IncomingMessage.prototype.setTimeout = function(msecs, callback) {
   if (callback)
     this.on('timeout', callback);
@@ -173,3 +174,32 @@ IncomingMessage.prototype._dump = function() {
     this.resume();
   }
 };
+
+var isNumber = require('util').isNumber;
+var HTTPParser = require('./http_parser').HTTPParser;
+IncomingMessage.prototype.init = function(parser,info) {   
+
+  parser.incoming.httpVersionMajor = info.versionMajor;
+  parser.incoming.httpVersionMinor = info.versionMinor;
+  parser.incoming.httpVersion = info.versionMajor + '.' + info.versionMinor;
+  parser.incoming.url = info.url;
+  var n = info.headers.length;
+
+  // If parser.maxHeaderPairs <= 0 - assume that there're no limit
+  if (parser.maxHeaderPairs > 0) {
+    n = Math.min(n, parser.maxHeaderPairs);
+  }
+
+  parser.incoming._addHeaderLines(info.headers, n);
+
+  if (isNumber(info.method)) {
+    // server only
+    parser.incoming.method = HTTPParser.methods[info.method];
+  } else {
+    // client only
+    parser.incoming.statusCode = info.statusCode;
+    parser.incoming.statusMessage = info.statusMessage;
+  }
+
+  parser.incoming.upgrade = info.upgrade;
+}

@@ -19,7 +19,7 @@ function HTTPParser(type) {
 }
 HTTPParser.REQUEST = 'REQUEST';
 HTTPParser.RESPONSE = 'RESPONSE';
-var kOnHeaders = HTTPParser.kOnHeaders = 0;
+var kOnTrailers = HTTPParser.kOnTrailers = 0;
 var kOnHeadersComplete = HTTPParser.kOnHeadersComplete = 1;
 var kOnBody = HTTPParser.kOnBody = 2;
 var kOnMessageComplete = HTTPParser.kOnMessageComplete = 3;
@@ -258,6 +258,21 @@ HTTPParser.prototype.HEADER = function () {
     
     this.info.shouldKeepAlive = this.shouldKeepAlive();
     //problem which also exists in original node: we should know skipBody before calling onHeadersComplete
+    // move from parserOnHeadersComplete,but actually it is meanless !
+    // // joint header
+    // var headers = this.info.headers;    
+    // if (!headers) {
+    //   headers = this._headers;
+    //   this._headers = [];
+    // }
+    // this.info.headers = headers
+    // // joint url
+    // var url = this.info.url;
+    // if (!url) {
+    //   url = this._url;
+    //   this._url = '';
+    // }
+    // this.info.url = url
     var skipBody = this.userCall()(this[kOnHeadersComplete](this.info));
     
     if (this.info.upgrade) {
@@ -316,7 +331,7 @@ HTTPParser.prototype.BODY_CHUNKTRAILERS = function () {
     this.parseHeader(line, this.trailers);
   } else {
     if (this.trailers.length) {
-      this.userCall()(this[kOnHeaders](this.trailers, this.info.url));
+      this.userCall()(this[kOnTrailers](this.trailers, this.info.url));
     }
     this.nextRequest();
   }
