@@ -1,15 +1,13 @@
-var a = 
-`HTTP/1.1 201 OK
-Connection: close
-Transfer-Encoding: chunked
+// var a = 
+// `HTTP/1.1 201 OK
+// Connection: close
+// Transfer-Encoding: chunked
 
-6
-echo_1
-6
-echo_2
-6
-echo_4
-0`
+// 6
+// echo_1
+// 0
+
+// `
 
 var common ={}
 common.PORT = 8011
@@ -21,7 +19,15 @@ function b(){
   var server = createServer(function(socket) {
       socket.on("data",function(data){
         // socket.write(new Buffer(a));
-        socket.write(a);
+        // console.log(data.toString("utf-8"))
+        // socket.write("HTTP/1.1 201 OK\r\nContent-Length: 6\r\n\r\n");
+        // socket.write("echo_3");
+        // socket.end();
+        socket.write("HTTP/1.1 201 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        // curl 需要两个CRLF
+        socket.write("6\r\necho_1\r\n0\r\n\r\n");
+        // 必须有end不然空等 
+        socket.end();
       })        
       
       // socket.write(a)
@@ -34,14 +40,18 @@ function b(){
     console.log('Server started 8011' );
 
     function req(){
-      
+      // return
       var req = http.request({
         host: 'localhost',
         port: common.PORT,
         method: 'POST',
         path: '/'
       },function(res){
+          console.log("+")
           var bodyChunks = [];
+          res.socket.on("data",function(data){
+            console.log(data)
+          })
         res.on('data', function(chunk) {
           bodyChunks.push(chunk);        
         }).on('end', function() {
