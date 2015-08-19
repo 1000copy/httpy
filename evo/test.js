@@ -8,6 +8,11 @@
 // 0
 
 // `
+
+var Header = require("./header.js")
+var header = new Header()
+header._storeHeader("http1.1 200 ok",{})
+return 
 var common ={}
 common.PORT = 8011
 var HttpServer = require("./HttpServer")

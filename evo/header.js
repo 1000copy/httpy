@@ -1,8 +1,10 @@
 
-var CRLF = common.CRLF;
-var chunkExpression = common.chunkExpression;
-var debug = common.debug;
-var debugparser= common.debugparser
+var CRLF = '\r\n';
+
+// exports.continueExpression = /100-continue/i;
+function debug(msg){console.log(msg)}
+
+var chunkExpression =  /chunk/i
 
 var connectionExpression = /Connection/i;
 var transferEncodingExpression = /Transfer-Encoding/i;
@@ -67,26 +69,12 @@ Header.prototype._storeHeader = function(firstLine, headers) {
 
   if (headers) {
     var keys = Object.keys(headers);
-    var isArray = util.isArray(headers);
     var field, value;
-
     for (var i = 0, l = keys.length; i < l; i++) {
-      var key = keys[i];
-      if (isArray) {
-        field = headers[key][0];
-        value = headers[key][1];
-      } else {
+        var key = keys[i];
         field = key;
         value = headers[key];
-      }
-
-      if (util.isArray(value)) {
-        for (var j = 0; j < value.length; j++) {
-          storeHeader(this, state, field, value[j]);
-        }
-      } else {
         storeHeader(this, state, field, value);
-      }
     }
   }
 
@@ -121,11 +109,6 @@ Header.prototype._storeHeader = function(firstLine, headers) {
     this.shouldKeepAlive = false;
 
   } else if (state.sentConnectionHeader === false) {
-    console.log(this.shouldKeepAlive ,
-                state.sentContentLengthHeader,
-                this.useChunkedEncodingByDefault ,
-                this.agent)
-    console.trace()
     var shouldSendKeepAlive = this.shouldKeepAlive &&
         (state.sentContentLengthHeader ||
          this.useChunkedEncodingByDefault ||
@@ -356,3 +339,4 @@ var crlf_buf = new Buffer('\r\n');
 
 
 
+module.exports = Header
