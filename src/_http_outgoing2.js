@@ -67,6 +67,9 @@ function OutgoingMessage() {
   this.socket = null;
   this.connection = null;
 }
+// 1000copy comments :
+// Incoming inherited from Stream.Readble ,...
+// in the meantime,Outgoing inherited from Stream ,BUT why not Stream.Writable?
 util.inherits(OutgoingMessage, Stream);
 
 

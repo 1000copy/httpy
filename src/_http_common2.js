@@ -58,7 +58,7 @@ function parserOnHeadersComplete(info) {
   if (!info.upgrade) {
     // For upgraded connections and CONNECT method request,
     // we'll emit this after parser.execute
-    // so that we can capture the first part of the new protocol
+    // so that we can capture the first part of the new protocol 
     skipBody = parser.onIncoming(parser.incoming, info.shouldKeepAlive);
   }
 

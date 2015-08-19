@@ -359,7 +359,7 @@ function connectionListener(socket) {
       socket.removeListener('close', serverSocketCloseListener);
       parser.finish();
       freeParser(parser, req);
-
+      // upgrade ref > node test-http-upgrade-agent 
       var eventName = req.method === 'CONNECT' ? 'connect' : 'upgrade';
       if (EventEmitter.listenerCount(self, eventName) > 0) {
         debug('SERVER have listener for %s', eventName);
