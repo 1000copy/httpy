@@ -21,7 +21,13 @@ var server = HttpServer.createServer(function(req,res){
   // console.log(i.versionMajor)
   // console.log(i.versionMinor)
   // console.log(i.shouldKeepAlive)
+  console.log(req.incoming.headers)
+  // req.on("header",function(header){console.log(header)})
   req.on("data",function(data){console.log(data.toString())})
+  req.on("end",function(data){console.log("end...")})
+  res.writeHeader(200,"",{"Content-Length":5})
+  res.write("chunk")
+  res.end()
 })
 server.port = common.PORT
 server.listen(req__)

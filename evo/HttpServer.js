@@ -15,6 +15,7 @@ HttpServer.prototype.connectionListener = function(socket) {
 	var datas = []
 	var msg = new IncomingMessage()
 	msg.on("header",function(header){
+		// console.log(header)
 		var req = new Request(msg)
 		var res = new Response(req)
 		if (self.pair)
@@ -35,12 +36,22 @@ HttpServer.prototype.listen = function(ok) {
 function Response(req){
 	this.req = req 
 }
+Response.prototype.writeHeader=function(statusCode,statusMessage,options){
+
+}
+Response.prototype.write=function(buffer){
+
+}
+Response.prototype.end=function(){
+
+}
 
 function Request(msg){
 	EE.call(this)
 	this.incoming = msg 
 	var self = this
 	this.incoming.on("data",function(data){self.emit("data",data)})
+	this.incoming.on("end",function(){self.emit("end")})
 }
 util.inherits(Request,EE)
 

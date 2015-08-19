@@ -37,8 +37,33 @@ IncomingMessage.prototype.onTrailer =  function(headers, url) {
     this.emit("trailer",headers)
 };
 
+_renderHeaders = function() {
+  if (this._header) {
+    throw new Error('Can\'t render headers after they are sent to the client.');
+  }
+
+  if (!this._headers) return {};
+
+  var headers = {};
+  var keys = Object.keys(this._headers);
+  for (var i = 0, l = keys.length; i < l; i++) {
+    var key = keys[i];
+    headers[this._headerNames[key]] = this._headers[key];
+  }
+  return headers;
+};
+
+IncomingMessage.prototype.gateway = function(headers) {
+  var r = {};
+  for (var i = 0;i < headers.length; i+=2) {
+    var key = headers[i];
+    var value = headers[i+1];
+    r[key] = value;
+  }
+  return r;
+}
 IncomingMessage.prototype.onheadercomplete = function(info) {
-  this.headers = info.headers
+  this.headers = this.gateway(info.headers)
   this.upgrade = info.upgrade
   this.method = info.method = HTTPParser.methods[info.method]
   this.url = info.url
