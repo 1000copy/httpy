@@ -51,12 +51,15 @@ function Header() {
 
 exports.Header = Header;
 
-
+Header.prototype.gate = function(statusCode, statusMessage,headers) {
+  var statusLine = 'HTTP/1.1 ' + statusCode.toString() + ' ' + statusMessage + CRLF;
+  return this._storeHeader(statusLine,headers)+ CRLF
+}
 Header.prototype._storeHeader = function(firstLine, headers) {
   // firstLine in the case of request is: 'GET /index.html HTTP/1.1\r\n'
   // in the case of response it is: 'HTTP/1.1 200 OK\r\n'
-
-  var state = {
+  console.log(firstLine)
+  this.state = {
     sentConnectionHeader: false,
     sentContentLengthHeader: false,
     sentTransferEncodingHeader: false,
@@ -64,7 +67,7 @@ Header.prototype._storeHeader = function(firstLine, headers) {
     sentExpect: false,
     messageHeader: firstLine
   };
-
+  var state = this.state
   var field, value;
 
   if (headers) {
@@ -143,7 +146,7 @@ Header.prototype._storeHeader = function(firstLine, headers) {
   // wait until the first body chunk, or close(), is sent to flush,
   // UNLESS we're sending Expect: 100-continue.
   if (state.sentExpect) this._send('');
-  debug("messageHeader",state.messageHeader)
+  return state.messageHeader
 };
 
 function storeHeader(self, state, field, value) {

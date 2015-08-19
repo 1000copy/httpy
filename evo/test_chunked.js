@@ -4,12 +4,12 @@
 var common ={"PORT": 8011}
 var HttpServer = require("./HttpServer")
 var server = HttpServer.createServer(function(req,res){
-  var n = 30
-  var b = n.toString(16)
-  res.writeHeader(200,"OK",{"Content-Length":30})
-  res.write("chunkchunkchunkchunkchunkchunk")
+  res.write("A"+"\r\n")
+  res.write("chunkchunk"+"\r\n")
+  res.write("5"+"\r\n")
+  res.write("chunk"+"\r\n")
+  res.write("0"+"\r\n"+"\r\n")
 })
-
 server.port = common.PORT
 server.listen(req__)
 console.log('Server started 8011' );

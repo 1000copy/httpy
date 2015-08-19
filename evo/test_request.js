@@ -1,15 +1,25 @@
 
-
-// return 
-var common ={"PORT": 8011}
+var common ={}
+common.PORT = 8011
 var HttpServer = require("./HttpServer")
 var server = HttpServer.createServer(function(req,res){
-  var n = 30
-  var b = n.toString(16)
-  res.writeHeader(200,"OK",{"Content-Length":30})
-  res.write("chunkchunkchunkchunkchunkchunk")
+  // console.log(req)
+  var i = req.incoming
+  console.log(i.headers)
+  console.log(i.upgrade)
+  console.log(i.method)
+  console.log(i.url)
+  console.log(i.versionMajor)
+  console.log(i.versionMinor)
+  console.log(i.shouldKeepAlive)
+  console.log(req.incoming.headers)
+  req.on("header",function(header){console.log(header)})
+  req.on("data",function(data){console.log(data.toString())})
+  req.on("end",function(data){console.log("end...")})
+  res.writeHeader(200,"OK",{"Content-Length":5})
+  res.write("chunk")
+  // res.end()
 })
-
 server.port = common.PORT
 server.listen(req__)
 console.log('Server started 8011' );
