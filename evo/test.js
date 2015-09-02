@@ -1,43 +1,37 @@
 
-// return 
-
-
-var common ={"PORT": 8011}
-var HttpServer = require("./HttpServer")
-var server = HttpServer.createServer(function(req,res){
-  var n = 30
-  var b = n.toString(16)
-  res.writeHeader(200,"OK",{"Content-Length":30})
-  res.write("chunkchunkchunkchunkchunkchunk")
+// PENDING ,实验还不成功
+// 客户端不end，就会看到FIN_WAIT 
+// 服务端不end，就会看到另外一个FIN_WAIT 
+// 有时候可以看到TIME_WAIT ,超时后会消失
+// 看法：netstat -na |findstr "8888"
+var assert = require("assert")
+var h = "localhost"
+var p = 8888
+var net = require("net")
+var options ={
+  allowHalfOpen: true  
+}
+var tcp = net.createServer(options,function (socket){
+  tcp.getConnections(function(err,count){
+    console.log("concurrent:"+count)
+  })
+  socket.on("end",function(data){    
+    console.log("SERVER: end fired")
+  })
+  socket.on("close",function(){
+    console.log("SERVER: closed fired ")    
+  })
+  socket.on("data",function(data){    
+    socket.write("echo "+data)
+    // socket.end()
+  })
 })
-
-server.port = common.PORT
-server.listen(req__)
-console.log('Server started 8011' );
-// ccc()
-  var http = require('http');
-
- function req__(){
-      // return
-      var req = http.request({
-        host: 'localhost',
-        port: common.PORT,
-        method: 'POST',
-        path: '/'
-      },function(res){
-          // console.log("+")
-          console.log( "CLIENT",res.headers);
-            var bodyChunks = [];
-            res.on('data', function(chunk) {
-              bodyChunks.push(chunk);        
-            }).on('end', function() {
-              var body = Buffer.concat(bodyChunks);        
-              console.log( "CLIENT",body.toString());
-            })
-        }).on('error', function(e) {
-            console.log(e.message);
-      })
-      req.write("chunk1")
-      req.write("chunk2")
-      req.end()
-    }
+tcp.listen(p,h,client)
+options.host = h
+options.port = p
+function client(){
+  var c = net.connect(options,function(){      
+      c.write("hello")      
+      c.end()
+  })
+}

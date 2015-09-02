@@ -55,10 +55,10 @@ Header.prototype.gate = function(statusCode, statusMessage,headers) {
   var statusLine = 'HTTP/1.1 ' + statusCode.toString() + ' ' + statusMessage + CRLF;
   return this._storeHeader(statusLine,headers)+ CRLF
 }
+// firstLine in the case of request is: 'GET /index.html HTTP/1.1\r\n'
+// in the case of response it is: 'HTTP/1.1 200 OK\r\n'
+
 Header.prototype._storeHeader = function(firstLine, headers) {
-  // firstLine in the case of request is: 'GET /index.html HTTP/1.1\r\n'
-  // in the case of response it is: 'HTTP/1.1 200 OK\r\n'
-  console.log(firstLine)
   this.state = {
     sentConnectionHeader: false,
     sentContentLengthHeader: false,
