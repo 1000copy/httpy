@@ -231,7 +231,7 @@ prompt: "ipmsg-node.js> ",
 replServer.context.t = ipmsg_sendmsg.bind(this,"192.168.2.115")
 replServer.context.q = br_exit
 replServer.context.e = broadcast_entry
-replServer.context.members = members
+replServer.context.m = members
 
 /* TEST CASE 
 ipmsg-node.js> members
@@ -252,4 +252,9 @@ t(1234)
 undefined
 ipmsg-node.js> received:1
 RECV:hgg
+
+没有tcpdump 帮忙可不行。看代码得看到什么时候？当然代码还是得看，但是有tcpdump要省很多事。
+ sudo tcpdump -nnvvXS  port 2425 
+
+
 */
