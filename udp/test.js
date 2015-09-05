@@ -33,6 +33,28 @@ var IPMSG_ANSPUBKEY        =0x00000073
 
 var PORT = 2425;
 var HOST = '192.168.2.112';
+var PEER = '192.168.2.115';
+var BROADCAST_ADDRESS = "192.168.2.255"
+var members = {}
+var config ={}
+config.LogOnUser = "lcj"
+config.HostName ="myair"
+config.UserName ="user"
+config.GroupName ="group"
+// UN:logOnUser
+// HN:Host Name 
+// NN:Ipmsg User Name
+// GN:Ipmsg Group Name
+function name_extension(){
+    var line_sp ="\n"
+    return line_sp+
+        "UN:"+config.LogOnUser+line_sp+
+        "HN:"+config.HostName+line_sp+
+        "NN:"+config.UserName+line_sp+
+        "GN:"+config.GroupName+line_sp
+} 
+
+
 // var HOST ="192.168.2.255"
 function get_cmd(raw){
     return raw & 0xff
@@ -48,60 +70,97 @@ server.on('listening', function () {
     // broadcast_entry("192.168.2.115")
     server.setBroadcast(true);
     broadcast_entry()
-    // sendipmsg()
-    // server.setBroadcast(true);
-    // var message = new Buffer("1:1441337488:air:book:18874369")
-    //  18874368  noop
-    // 
-    // 18874392 = 24 IPMSG_BR_ISGETLIST2
-	// server.send(message, 0, message.length, PORT, "192.168.2.255");
 });
-var noop ="1:1441412180:air:mac:18874368:"
-var entry="1:1441412180:air:mac:18874369:mba\rUN:air\rHN:mac\rNN:air mac\rGN:gn"
-var getlist2="1:1441412180:air:mac:188"
-function sendipmsg(){
-	var ip = "192.168.2.115"
-	var message = new Buffer("1:1441337488:air:book:32:message")
-	server.send(message, 0, message.length, PORT, ip);	
-}
+
+var LOCALIP ="192.168.2.112"
 function sendmsg(ip,message){
-    // var ip = "192.168.2.115"
-    // var message = new Buffer("1:1441337488:air:book:32:message")
     server.send(message, 0, message.length, PORT, ip);  
 }
-function broadcast_message(message){
-    // var ip = "192.168.2.115"
-    // var message = new Buffer("1:1441337488:air:book:32:message")
-    // server.send(message, 0, message.length, PORT, "255.255.255.255");  
-    server.send(message, 0, message.length, PORT, "192.168.2.255");
-    // server.send(message, 0, message.length, PORT, "192.168.2.115");  
+function broadcast(message){
+    var address = BROADCAST_ADDRESS
+    server.send(message, 0, message.length, PORT, address);
 }
-var woo = true
+
 function broadcast_entry(){
-    // var remote ={}
-    // remote.address = address
-    // broadcast_message(noop)
-    broadcast_message(entry)
-    // broadcast_message(getlist2)
+    var msg = {}
+    msg.version = 1
+    msg.no =1
+    msg.name = config.LogOnUser
+    msg.group = config.HostName
+    msg.commandraw = IPMSG_BR_ENTRY
+    msg.message = config.LogOnUser
+    msg.extension = name_extension()
+    // broadcast(entry)
+    broadcast(msg2buf(msg))
+    // broadcast(getlist2)
+}
+function memberpush (msg,ip){
+    members[ip] = {name:msg.name,group:msg.group}
+    // ipmsg_sendmsg(PEER,"girl")
 }
 server.on('message', function (message, remote) {
     // console.log(remote.address + ':' + remote.port +' - ' + message);
-    if (woo){
-        // broadcast_entry()
-        woo = false
-    }
+
     var msg = buf2msg(message)
     var cmd = get_cmd(msg.commandraw)
     if (cmd == IPMSG_ANSENTRY){
-        console.log("ansentry:"+msg.name)
-    }
-    // var msg = buf2msg(message)
-    // msg.name = "air"
-    // msg.group ="mac"
+        memberpush(msg,remote.address)
+        // console.log(members)
+    }else if (cmd==IPMSG_BR_ENTRY && remote.address !=LOCALIP){
+        memberpush(msg,remote.address)
+        answer_entry(remote.address)
+        // console.log(msg)
+    }else if (cmd==IPMSG_RECVMSG ){
+        console.log("received:"+msg.extension)
+        // console.log(msg)
+    }else if (cmd==IPMSG_SENDMSG ){
+        answer_send(remote.address,msg)
+        console.log("RECV:"+msg.extension)
+        // console.log(msg)
+    }else if (cmd==IPMSG_BR_EXIT ){
+        // answer_send(remote.address,msg)
+        // console.log("RECV:"+msg.extension)
+        // console.log(msg)
+        var key = members[remote.address]
+        if (key){
+            members[remote.address] =null
+            delete members[remote.address]
+        }
 
-    // sendmsg(remote.address,msg2buf(msg))
-    // console.log(buf2msg(message))
+    }
 });
+function answer_send(ip,src){
+    var msg ={}
+    msg.version = 1
+    msg.no = 1
+    msg.name = config.LogOnUser
+    msg.group = config.HostName
+    // msg.commandraw = IPMSG_SENDMSG
+    // msg.commandraw = 16777218 //0x800120 
+    msg.commandraw = IPMSG_RECVMSG
+    msg.message =src.no +"\0"
+    // msg.extension = name_extension()
+    // msg.message = message+"\0"
+    var buffer = msg2buf(msg)
+    // console.log(buffer,buffer.length)
+    server.send(buffer, 0, buffer.length, PORT, ip);
+}
+function answer_entry(ip){
+    var msg ={}
+    msg.version = 1
+    msg.no = 1
+    msg.name = config.LogOnUser
+    msg.group = config.HostName
+    // msg.commandraw = IPMSG_SENDMSG
+    // msg.commandraw = 16777218 //0x800120 
+    msg.commandraw = IPMSG_ANSENTRY
+    msg.message =config.LogOnUser +"\0"
+    msg.extension = name_extension()
+    // msg.message = message+"\0"
+    var buffer = msg2buf(msg)
+    // console.log(buffer,buffer.length)
+    server.send(buffer, 0, buffer.length, PORT, BROADCAST_ADDRESS);
+}
 function buf2msg(message){
 	var bsplit = require('buffer-split')
     var snap = new Buffer(':')
@@ -118,31 +177,79 @@ function buf2msg(message){
 	return msg
 }
 function msg2buf(msg){
-    var str = msg.version+":"
+    var str = msg.version+":"+
         // msg.no+":"+
         msg.no+":"+
         msg.name+":"+
         msg.group+":"+
-        msg.commandraw+":"
+        msg.commandraw+":"+msg.message
         // msg.no+":"
-    // if (msg.extension )
-    //     str += msg.extension
-    return new Buffer(msg)
+    if (msg.extension )
+        str += msg.extension
+    // console.log(str)
+    return new Buffer(str)
 }
+function ipmsg_sendmsg(ip,message){
+    var msg ={}
+    msg.version = 1
+    msg.no = 1
+    msg.name = config.LogOnUser
+    msg.group = config.HostName
+    // msg.commandraw = IPMSG_SENDMSG
+    msg.commandraw = 8388896 //0x800120 
+    msg.message = message+"\0"
+    var buffer = msg2buf(msg)
+    // console.log(buffer,buffer.length)
+    server.send(buffer, 0, buffer.length, PORT, ip);
+}
+var confirming_packages = {}
 server.bind(PORT);
-/*
+function br_exit(){
+    var msg ={}
+    msg.version = 1
+    msg.no = 1
+    msg.name = config.LogOnUser
+    msg.group = config.HostName
+    // msg.commandraw = IPMSG_SENDMSG
+    // msg.commandraw = 16777218 //0x800120 
+    msg.commandraw = 0x0000002
+    msg.message =config.LogOnUser +"\0"
+    msg.extension = name_extension()
+    // msg.message = message+"\0"
+    var buffer = msg2buf(msg)
+    // console.log(buffer,buffer.length)
+    server.send(buffer, 0, buffer.length, PORT, BROADCAST_ADDRESS);
+}
 
-192.168.2.115:2425 - 1:1441412180:mobile:lcjiPhone.local:18874368:
-192.168.2.115:2425 - 1:1441412180:mobile:lcjiPhone.local:18874369:lcj�CiPhoneiPhone
-UN:mobile
-HN:lcjiPhone.local
-NN:lcj，iPhone
-GN:iPhone
 
-192.168.2.115:2425 - 1:1441412180:mobile:lcjiPhone.local:188
+var repl = require ("repl"); 
 
+var replServer = repl.start ({ 
+prompt: "ipmsg-node.js> ", 
+}); 
 
+replServer.context.t = ipmsg_sendmsg.bind(this,"192.168.2.115")
+replServer.context.q = br_exit
+replServer.context.e = broadcast_entry
+replServer.context.members = members
 
+/* TEST CASE 
+ipmsg-node.js> members
 
-
+{ '192.168.2.112': { name: 'lcj', group: 'myair' } }
+ipmsg-node.js> members
+members
+{ '192.168.2.112': { name: 'lcj', group: 'myair' },
+  '192.168.2.115': { name: 'mobile', group: 'lcjiPhone.local' } }
+ipmsg-node.js> members
+members
+{ '192.168.2.112': { name: 'lcj', group: 'myair' } }
+ipmsg-node.js> t(1234)
+t(1234)
+undefined
+ipmsg-node.js> t(1234)
+t(1234)
+undefined
+ipmsg-node.js> received:1
+RECV:hgg
 */
