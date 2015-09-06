@@ -12,18 +12,12 @@ var options ={
   allowHalfOpen: true  
 }
 var tcp = net.createServer(options,function (socket){
-  tcp.getConnections(function(err,count){
-    console.log("concurrent:"+count)
-  })
-  socket.on("end",function(data){    
-    console.log("SERVER: end fired")
-  })
-  socket.on("close",function(){
-    console.log("SERVER: closed fired ")    
-  })
+  // tcp.getConnections(function(err,count){
+  //   console.log("concurrent:"+count)
+  // })
   socket.on("data",function(data){    
     socket.write("echo "+data)
-    // socket.end()
+    socket.end()
   })
 })
 tcp.listen(p,h,client)
@@ -31,7 +25,11 @@ options.host = h
 options.port = p
 function client(){
   var c = net.connect(options,function(){      
+      c.on("data",function(data){    
+        console.log("server echo"+data)
+      })
       c.write("hello")      
       c.end()
   })
+  
 }
